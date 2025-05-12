@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "F7dkiV9vcUq8G2a//Dj7PfX1oV9s4hPx1ZUKQ3/imyo=",
+  "Source": "EventBookingAPI",
+  "BasePath": "_content/EventBookingAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
