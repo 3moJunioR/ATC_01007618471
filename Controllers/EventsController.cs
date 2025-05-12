@@ -10,68 +10,57 @@ namespace EventBookingAPI.Controllers
     [Route("api/[controller]")]
     public class EventsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _ctx;
 
-        public EventsController(ApplicationDbContext context)
+        public EventsController(ApplicationDbContext ctx)
         {
-            _context = context;
+            _ctx = ctx;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
+        public async Task<ActionResult<List<Event>>> GetEvents()
         {
-            return await _context.Events.ToListAsync();
+            return await _ctx.Events.ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEvent(int id)
         {
-            var eventItem = await _context.Events.FindAsync(id);
+            var e = await _ctx.Events.FindAsync(id);
 
-            if (eventItem == null)
-            {
+            if (e == null)
                 return NotFound();
-            }
 
-            return eventItem;
+            return e;
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult<Event>> CreateEvent(Event eventItem)
+        public async Task<ActionResult<Event>> CreateEvent(Event ev)
         {
-            _context.Events.Add(eventItem);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetEvent), new { id = eventItem.Id }, eventItem);
+            _ctx.Events.Add(ev);
+            await _ctx.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetEvent), new { id = ev.Id }, ev);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEvent(int id, Event eventItem)
+        public async Task<IActionResult> UpdateEvent(int id, Event ev)
         {
-            if (id != eventItem.Id)
-            {
+            if (id != ev.Id)
                 return BadRequest();
-            }
 
-            eventItem.UpdatedAt = DateTime.UtcNow;
-            _context.Entry(eventItem).State = EntityState.Modified;
+            ev.UpdatedAt = DateTime.UtcNow;
+            _ctx.Entry(ev).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _ctx.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch
             {
-                if (!EventExists(id))
-                {
+                if (!_ctx.Events.Any(x => x.Id == id))
                     return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
             }
 
             return NoContent();
@@ -81,21 +70,14 @@ namespace EventBookingAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvent(int id)
         {
-            var eventItem = await _context.Events.FindAsync(id);
-            if (eventItem == null)
-            {
+            var ev = await _ctx.Events.FindAsync(id);
+            if (ev == null)
                 return NotFound();
-            }
 
-            _context.Events.Remove(eventItem);
-            await _context.SaveChangesAsync();
+            _ctx.Events.Remove(ev);
+            await _ctx.SaveChangesAsync();
 
             return NoContent();
         }
-
-        private bool EventExists(int id)
-        {
-            return _context.Events.Any(e => e.Id == id);
-        }
     }
-} 
+}

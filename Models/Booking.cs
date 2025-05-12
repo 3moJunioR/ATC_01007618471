@@ -19,6 +19,6 @@ namespace EventBookingAPI.Models
 
         public DateTime BookingDate { get; set; } = DateTime.UtcNow;
 
-        public string Status { get; set; } = "Confirmed"; // Confirmed, Cancelled
+        public string Status { get; set; } = "Confirmed";
     }
 } 

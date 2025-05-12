@@ -24,7 +24,6 @@ namespace EventBookingAPI.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             return await _context.Bookings
-                .Include(b => b.Event)
                 .Where(b => b.UserId == userId)
                 .ToListAsync();
         }
@@ -34,7 +33,6 @@ namespace EventBookingAPI.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var booking = await _context.Bookings
-                .Include(b => b.Event)
                 .FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
 
             if (booking == null)
@@ -46,23 +44,14 @@ namespace EventBookingAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Booking>> CreateBooking(BookingCreateModel model)
+        public async Task<ActionResult> CreateBooking(BookingCreateModel model)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var eventItem = await _context.Events.FindAsync(model.EventId);
+            var ev = await _context.Events.FindAsync(model.EventId);
 
-            if (eventItem == null)
+            if (ev == null)
             {
-                return NotFound("Event not found");
-            }
-
-            // Check if user already has a booking for this event
-            var existingBooking = await _context.Bookings
-                .FirstOrDefaultAsync(b => b.UserId == userId && b.EventId == model.EventId);
-
-            if (existingBooking != null)
-            {
-                return BadRequest("You have already booked this event");
+                return BadRequest("Event not found");
             }
 
             var booking = new Booking
@@ -76,7 +65,7 @@ namespace EventBookingAPI.Controllers
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
+            return Ok(booking); 
         }
 
         [HttpDelete("{id}")]
@@ -94,17 +83,14 @@ namespace EventBookingAPI.Controllers
             booking.Status = "Cancelled";
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(); 
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("admin")]
         public async Task<ActionResult<IEnumerable<Booking>>> GetAllBookings()
         {
-            return await _context.Bookings
-                .Include(b => b.Event)
-                .Include(b => b.User)
-                .ToListAsync();
+            return await _context.Bookings.ToListAsync(); 
         }
     }
 
@@ -113,4 +99,4 @@ namespace EventBookingAPI.Controllers
         public int EventId { get; set; }
         public int TicketCount { get; set; } = 1;
     }
-} 
+}

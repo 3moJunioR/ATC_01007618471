@@ -18,7 +18,6 @@ namespace EventBookingAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure relationships
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.User)
                 .WithMany()
@@ -31,7 +30,6 @@ namespace EventBookingAPI.Data
                 .HasForeignKey(b => b.EventId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Add any additional configurations here
         }
     }
 } 

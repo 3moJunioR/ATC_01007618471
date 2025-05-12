@@ -4,52 +4,43 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using EventBookingAPI.Data;
 
-var builder = WebApplication.CreateBuilder(args);
+var b = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
+b.Services.AddControllers();
 
-// Add DbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+b.Services.AddDbContext<ApplicationDbContext>(o =>
+    o.UseSqlServer(b.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add JWT Authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+b.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        o.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            ValidIssuer = b.Configuration["Jwt:Issuer"],
+            ValidAudience = b.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(b.Configuration["Jwt:Key"]))
         };
     });
 
-// Add Localization
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-builder.Services.AddControllers()
-    .AddDataAnnotationsLocalization()
-    .AddViewLocalization();
+b.Services.AddLocalization(o => o.ResourcesPath = "Resources");
 
-builder.Services.Configure<RequestLocalizationOptions>(options =>
+b.Services.AddControllers().AddDataAnnotationsLocalization().AddViewLocalization();
+
+b.Services.Configure<RequestLocalizationOptions>(o =>
 {
-    var supportedCultures = new[] { "en-US", "ar-SA" };
-    options.SetDefaultCulture(supportedCultures[0])
-        .AddSupportedCultures(supportedCultures)
-        .AddSupportedUICultures(supportedCultures);
+    var langs = new[] { "en-US", "ar-SA" };
+    o.SetDefaultCulture(langs[0]).AddSupportedCultures(langs).AddSupportedUICultures(langs);
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+b.Services.AddEndpointsApiExplorer();
+b.Services.AddSwaggerGen();
 
-var app = builder.Build();
+var app = b.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -57,15 +48,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+record WeatherForecast(DateOnly Date, int TempC, string? Sum)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public int TempF => 32 + (int)(TempC / 0.5);
 }
